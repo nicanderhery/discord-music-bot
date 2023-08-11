@@ -1,0 +1,45 @@
+{
+    "compilerOptions": {
+        "target": "ESNext" /* Target version of ECMAScript */,
+        "module": "commonjs" /* Output module format */,
+
+        /* Strict type-checking options */
+        "strict": true,
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+        "strictPropertyInitialization": true,
+        "noImplicitAny": true /* Raise error on expressions and declarations with an implied 'any' type */,
+
+        /* Advanced type-checking options */
+        "strictBindCallApply": true /* Enable strict bind/call/apply checks */,
+        "noImplicitThis": true /* Raise error on 'this' expressions with an implied 'any' type */,
+        "alwaysStrict": true /* Ensure 'use strict' is always added to the emitted code */,
+
+        /* Additional checks */
+        "noUnusedLocals": true /* Report errors on unused locals */,
+        "noUnusedParameters": true /* Report errors on unused parameters */,
+
+        /* Emit output to the 'dist' folder (change to your build output folder if needed) */
+        "outDir": "dist",
+        "rootDir": "src" /* Set the root directory of the TypeScript source files */,
+
+        /* Allow importing modules with .ts and .tsx extensions */
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+
+        /* More */
+        "moduleResolution": "node",
+        "importHelpers": true,
+        "experimentalDecorators": true,
+        "skipLibCheck": true,
+        "resolveJsonModule": true,
+        "forceConsistentCasingInFileNames": true,
+        "removeComments": true,
+        "typeRoots": ["node_modules/@types"],
+        "sourceMap": false,
+        "baseUrl": "./"
+    },
+    "include": ["src/**/*.ts" /* Include TypeScript source files from the 'src' folder */],
+    /* Exclude node_modules and build output from being compiled */
+    "exclude": ["node_modules", "dist"]
+}

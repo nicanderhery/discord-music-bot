@@ -1,0 +1,47 @@
+{
+    "name": "discord-music-bot",
+    "version": "2.0.0",
+    "description": "A discord bot project using typescript",
+    "main": "./dist/index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "build": "tsc",
+        "clean": "tsc --build --clean",
+        "dev": "tsc-watch --onSuccess \"node ./dist/index.js\"",
+        "start": "node ./dist/index.js",
+        "start:background": "pm2 start ./dist/index.js --name discord-music-bot",
+        "production": "npm run clean && npm run build && npm run start:background",
+        "lint": "eslint . --ext .ts",
+        "lint:fix": "eslint . --ext .ts --fix",
+        "format": "prettier --write ."
+    },
+    "keywords": [
+        "discord",
+        "bot",
+        "discord.js",
+        "typescript"
+    ],
+    "author": "nicanderhery@gmail.com",
+    "license": "ISC",
+    "devDependencies": {
+        "@types/ms": "^0.7.31",
+        "@typescript-eslint/eslint-plugin": "^6.2.0",
+        "dotenv": "^16.3.1",
+        "eslint": "^8.46.0",
+        "eslint-config-prettier": "^8.9.0",
+        "eslint-plugin-prettier": "^5.0.0",
+        "husky": "^8.0.3",
+        "prettier": "^3.0.0",
+        "tsc-watch": "^6.0.4",
+        "typescript": "^5.1.6"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "lint"
+        }
+    },
+    "dependencies": {
+        "discord-player": "^6.6.2",
+        "discord.js": "^14.12.1"
+    }
+}
