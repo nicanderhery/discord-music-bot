@@ -13,7 +13,7 @@
         "production": "npm run clean && npm run build && npm run start:background",
         "lint": "eslint . --ext .ts",
         "lint:fix": "eslint . --ext .ts --fix",
-        "format": "prettier --write ."
+        "format": "prettier --write . --config ./.prettierrc"
     },
     "keywords": [
         "discord",
