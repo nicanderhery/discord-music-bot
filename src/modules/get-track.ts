@@ -11,18 +11,18 @@ import { logger } from '../utils/logger';
  * @returns {Promise<SearchResult | undefined>} the search result or undefined if an error occurred
  */
 export const getTrack = async (
-    Nica: NicaMusic,
-    player: Player,
-    query: string,
+  Nica: NicaMusic,
+  player: Player,
+  query: string,
 ): Promise<SearchResult | undefined> => {
-    try {
-        const searchResult = await player.search(query, {
-            requestedBy: Nica.user as UserResolvable,
-            searchEngine: QueryType.AUTO,
-        });
-        return searchResult;
-    } catch (error) {
-        logger.error('Error from function: getTrack');
-        return undefined;
-    }
+  try {
+    const searchResult = await player.search(query, {
+      requestedBy: Nica.user as UserResolvable,
+      searchEngine: QueryType.AUTO,
+    });
+    return searchResult;
+  } catch (error) {
+    logger.error('Error from function: getTrack');
+    return undefined;
+  }
 };

@@ -6,16 +6,16 @@ import { NicaMusic } from '../nica-discord';
  * Interface for a command.
  */
 export interface Command {
-    data:
-        | Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>
-        | SlashCommandSubcommandsOnlyBuilder;
+  data:
+    | Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>
+    | SlashCommandSubcommandsOnlyBuilder;
 
-    /**
-     *
-     * @param {NicaMusic} Nica Nica's Discord instance.
-     * @param {ChatInputCommandInteraction} interaction The interaction payload from Discord.
-     */
-    run: (Nica: NicaMusic, interaction: ChatInputCommandInteraction) => Promise<void>;
+  /**
+   *
+   * @param {NicaMusic} Nica Nica's Discord instance.
+   * @param {ChatInputCommandInteraction} interaction The interaction payload from Discord.
+   */
+  run: (Nica: NicaMusic, interaction: ChatInputCommandInteraction) => Promise<void>;
 
-    autocomplete?: (Nica: NicaMusic, interaction: AutocompleteInteraction) => Promise<void>;
+  autocomplete?: (Nica: NicaMusic, interaction: AutocompleteInteraction) => Promise<void>;
 }

@@ -1,15 +1,15 @@
 import { SpotifyTrack } from './track';
 
 export interface SpotifyTrackResponse {
-    tracks: {
-        total: number;
-        items: {
-            track: SpotifyTrack;
-        }[];
-        next: string;
-    };
+  tracks: {
+    total: number;
     items: {
-        track: SpotifyTrack;
+      track: SpotifyTrack;
     }[];
     next: string;
+  };
+  items: {
+    track: SpotifyTrack;
+  }[];
+  next: string;
 }

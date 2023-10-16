@@ -1,3 +1,3 @@
 export interface SpotifyTrack {
-    uri: string;
+  uri: string;
 }

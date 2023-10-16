@@ -1,16 +1,16 @@
 name: Run prettier and lint
 on:
-    pull_request:
-        branches:
-            - main
+  pull_request:
+    branches:
+      - main
 jobs:
-    prettier-lint:
-        name: Run prettier and lint on backend
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v3
-            - name: Install packages and run prettier and lint
-              run: |
-                  npm ci
-                  npm run format
-                  npm run lint
+  prettier-lint:
+    name: Run prettier and lint on backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install packages and run prettier and lint
+        run: |
+          npm ci
+          npm run format
+          npm run lint

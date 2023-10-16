@@ -6,5 +6,5 @@
  * @returns {Promise<void>} Promise that resolves after the given time.
  */
 export const sleep = async (milliseconds: number): Promise<void> => {
-    await new Promise((resolve) => setTimeout(resolve, milliseconds));
+  await new Promise((resolve) => setTimeout(resolve, milliseconds));
 };
