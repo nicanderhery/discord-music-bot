@@ -5,8 +5,9 @@ import {
   ButtonBuilder,
   ButtonInteraction,
   ButtonStyle,
+  CacheType,
+  ChatInputCommandInteraction,
   EmbedBuilder,
-  Message,
   VoiceState,
 } from 'discord.js';
 import { GuildMetadata } from '../../interfaces/guild-metadata';
@@ -16,29 +17,6 @@ import { logger } from '../../utils/logger';
 export const registerPlayerEvents = (Nica: NicaMusic, player: Player): void => {
   try {
     player.events.on('connection', (queue) => {
-      // ! temp fix for the voice connection issue with discord and discordjs/voice
-      queue.dispatcher?.voiceConnection.on('stateChange', (oldState, newState) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const oldNetworking = Reflect.get(oldState, 'networking');
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const newNetworking = Reflect.get(newState, 'networking');
-
-        const networkStateChangeHandler = (
-          _oldNetworkState: VoiceState,
-          newNetworkState: VoiceState,
-        ) => {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          const newUdp = Reflect.get(newNetworkState, 'udp');
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-          clearInterval(newUdp?.keepAliveInterval);
-        };
-
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-        oldNetworking?.off('stateChange', networkStateChangeHandler);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-        newNetworking?.on('stateChange', networkStateChangeHandler);
-      });
-
       logger.debug(`Connection in ${queue.guild.name}`, 'Debug from player event: connection');
     });
 
@@ -46,14 +24,6 @@ export const registerPlayerEvents = (Nica: NicaMusic, player: Player): void => {
       logger.error(error, 'Error from player event: error');
       logger.error(error, `Error with player in ${queue.guild.name}`);
     });
-
-    // ! Only for debugging purposes
-    // Player.events.on("debug", (queue, message) => {
-    //     Logger(
-    //         NicaLogType.DEBUG,
-    //         `Debug in ${queue.guild.name} | ${message}`
-    //     );
-    // });
 
     player.events.on('playerError', (queue, error, track) => {
       logger.error(queue, error, track, 'Error from player event: playerError');
@@ -117,8 +87,7 @@ export const registerPlayerEvents = (Nica: NicaMusic, player: Player): void => {
         skipButton,
       );
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-      const message: Message = await (metadata.channel as any).send({
+      const message = await metadata.channel.send({
         embeds: [embed],
         components: [row],
       });
@@ -134,31 +103,23 @@ export const registerPlayerEvents = (Nica: NicaMusic, player: Player): void => {
       });
 
       collector.on('collect', async (collectorInteraction: ButtonInteraction) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-        const convertedInteraction = collectorInteraction as any;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        const convertedInteraction =
+          collectorInteraction as unknown as ChatInputCommandInteraction<CacheType>;
         convertedInteraction.commandName = collectorInteraction.customId;
 
         // If the track is paused, then the resume button is pressed, and vice versa
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (convertedInteraction.commandName === 'resume&pause') {
           if (!queue.node.isPaused()) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             convertedInteraction.commandName = 'pause';
           } else {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             convertedInteraction.commandName = 'resume';
           }
         }
 
         const command = Nica.commands.find(
-          (command) =>
-            command.data.name ===
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            convertedInteraction.commandName,
+          (command) => command.data.name === convertedInteraction.commandName,
         );
         if (command) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           await command.run(Nica, convertedInteraction);
         } else {
           await collectorInteraction.reply({
@@ -167,7 +128,6 @@ export const registerPlayerEvents = (Nica: NicaMusic, player: Player): void => {
             ephemeral: true,
           });
           logger.debug(
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-member-access
             `${convertedInteraction.commandName} command was not found from player event playerStart (collector)`,
             'Debug from event: playerStart',
           );
@@ -177,24 +137,29 @@ export const registerPlayerEvents = (Nica: NicaMusic, player: Player): void => {
 
     player.events.on('audioTrackAdd', (queue, track) => {
       const metadata = queue.metadata as GuildMetadata;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-      (metadata.channel as any).send(`Track ${track.title} added in the queue ✅`);
+      metadata.channel.send(`Track ${track.title} added in the queue ✅`).catch((error) => {
+        logger.error(error, 'Error from event: audioTrackAdd');
+      });
     });
 
     player.events.on('audioTracksAdd', (queue) => {
       const metadata = queue.metadata as GuildMetadata;
       if (!metadata.spotifySearching) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-        (metadata.channel as any).send('All the tracks in playlist added into the queue ✅');
+        metadata.channel
+          .send('All the tracks in playlist added into the queue ✅')
+          .catch((error) => {
+            logger.error(error, 'Error from event: audioTracksAdd');
+          });
       }
     });
 
     player.events.on('disconnect', (queue) => {
       const metadata = queue.metadata as GuildMetadata;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-      (metadata.channel as any).send(
-        'I was manually disconnected from the voice channel, clearing queue... 🗑️',
-      );
+      metadata.channel
+        .send('I was manually disconnected from the voice channel, clearing queue... 🗑️')
+        .catch((error) => {
+          logger.error(error, 'Error from event: disconnect');
+        });
       Nica.user?.setActivity(Nica.configs.message, {
         type: ActivityType.Listening,
       });
@@ -206,22 +171,25 @@ export const registerPlayerEvents = (Nica: NicaMusic, player: Player): void => {
       const metadata = queue.metadata as GuildMetadata;
       if (Nica.playerConfigs.leaveOnEmpty) {
         // Only show this if leave on Empty is true.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any
-        (metadata.channel as any).send(
-          'Nobody is in the voice channel, leaving the voice channel... ❌',
-        );
+        metadata.channel
+          .send('Nobody is in the voice channel, leaving the voice channel... ❌')
+          .catch((error) => {
+            logger.error(error, 'Error from event: emptyChannel');
+          });
       }
     });
 
     player.events.on('emptyQueue', (queue) => {
       const metadata = queue.metadata as GuildMetadata;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any
-      (metadata.channel as any).send('I finished reading the whole queue ✅');
+      metadata.channel.send('I finished reading the whole queue ✅').catch((error) => {
+        logger.error(error, 'Error from event: emptyQueue');
+      });
       Nica.user?.setActivity(Nica.configs.message, {
         type: ActivityType.Listening,
       });
     });
 
+    let currentlyPaused = false;
     Nica.on('voiceStateUpdate', (oldState, newState) => {
       const channels: VoiceState[] = [oldState, newState];
       let guildId: string | undefined;
@@ -246,25 +214,31 @@ export const registerPlayerEvents = (Nica: NicaMusic, player: Player): void => {
 
       // If at least one member is in the bot's voice channel, unpause the music
       if (memberSize > 1) {
-        if (!queue.node.resume()) {
-          return;
+        queue.node.resume();
+        if (currentlyPaused) {
+          metadata.channel.send('Continuing the music ✅').catch((error) => {
+            logger.error(error, 'Error from event: voiceStateUpdate');
+          });
+          Nica.user?.setActivity(queue.currentTrack?.title ?? 'Missing title', {
+            type: ActivityType.Listening,
+          });
+          currentlyPaused = false;
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any
-        (metadata.channel as any).send('Continuing the music ✅');
-        Nica.user?.setActivity(queue.currentTrack?.title ?? 'Missing title', {
-          type: ActivityType.Listening,
-        });
       } else {
-        if (!queue.node.pause()) {
-          return;
+        queue.node.pause();
+        if (!currentlyPaused) {
+          metadata.channel
+            .send(
+              `Nobody is in voice channel ${metadata.voiceChannel.name}, pausing the music... ❌`,
+            )
+            .catch((error) => {
+              logger.error(error, 'Error from event: voiceStateUpdate');
+            });
+          Nica.user?.setActivity(Nica.configs.message, {
+            type: ActivityType.Listening,
+          });
+          currentlyPaused = true;
         }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any
-        (metadata.channel as any).send(
-          `Nobody is in voice channel ${metadata.voiceChannel.name}, pausing the music... ❌`,
-        );
-        Nica.user?.setActivity(Nica.configs.message, {
-          type: ActivityType.Listening,
-        });
       }
     });
 

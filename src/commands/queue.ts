@@ -4,6 +4,7 @@ import {
   ButtonBuilder,
   ButtonInteraction,
   ButtonStyle,
+  CacheType,
   ChatInputCommandInteraction,
   EmbedBuilder,
   SlashCommandBuilder,
@@ -107,15 +108,11 @@ export const queue: Command = {
 
       collector.on('collect', async (collectorInteraction: ButtonInteraction) => {
         let pages = generatePages(Nica, queue, collectorInteraction);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-        const convertedInteraction = collectorInteraction as any;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        const convertedInteraction =
+          collectorInteraction as unknown as ChatInputCommandInteraction<CacheType>;
         convertedInteraction.commandName = collectorInteraction.customId;
         const shuffleCommand = Nica.commands.find(
-          (command) =>
-            command.data.name ===
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            convertedInteraction.commandName,
+          (command) => command.data.name === convertedInteraction.commandName,
         );
         switch (collectorInteraction.customId) {
           case 'previousPage':
@@ -125,11 +122,7 @@ export const queue: Command = {
 
           case 'shuffle':
             if (shuffleCommand) {
-              await shuffleCommand.run(
-                Nica,
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                convertedInteraction,
-              );
+              await shuffleCommand.run(Nica, convertedInteraction);
               pages = generatePages(Nica, queue, interaction);
             } else {
               await collectorInteraction.reply({
@@ -138,7 +131,6 @@ export const queue: Command = {
                 ephemeral: true,
               });
               logger.debug(
-                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-member-access
                 `${convertedInteraction.commandName} command was not found`,
                 `Debug from command: ${interaction.commandName}`,
               );

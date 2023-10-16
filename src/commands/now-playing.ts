@@ -4,6 +4,7 @@ import {
   ButtonBuilder,
   ButtonInteraction,
   ButtonStyle,
+  CacheType,
   ChatInputCommandInteraction,
   EmbedBuilder,
   SlashCommandBuilder,
@@ -136,17 +137,14 @@ export const nowPlaying: Command = {
       });
 
       collector.on('collect', async (collectorInteraction: ButtonInteraction) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-        const convertedInteraction = collectorInteraction as any;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        const convertedInteraction =
+          collectorInteraction as unknown as ChatInputCommandInteraction<CacheType>;
         convertedInteraction.commandName = collectorInteraction.customId;
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         switch (convertedInteraction.commandName) {
           case 'volumeUp':
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             convertedInteraction.commandName = 'volume';
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            // @ts-expect-error getInteger is not part of ChatInputCommandInteraction
             convertedInteraction.options = {
               getInteger: (): number => {
                 let adjustedVolume = queue.node.volume + 10;
@@ -160,18 +158,15 @@ export const nowPlaying: Command = {
 
           case 'resume&pause':
             if (!queue.node.isPaused()) {
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
               convertedInteraction.commandName = 'pause';
             } else {
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
               convertedInteraction.commandName = 'resume';
             }
             break;
 
           case 'volumeDown':
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             convertedInteraction.commandName = 'volume';
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            // @ts-expect-error getInteger is not part of ChatInputCommandInteraction
             convertedInteraction.options = {
               getInteger: (): number => {
                 let adjustedVolume = queue.node.volume - 10;
@@ -184,7 +179,7 @@ export const nowPlaying: Command = {
             break;
 
           case 'loop':
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            // @ts-expect-error getString is not part of ChatInputCommandInteraction
             convertedInteraction.options = {
               getString: (): string => {
                 if (queue.repeatMode === QueueRepeatMode.OFF) {
@@ -203,14 +198,9 @@ export const nowPlaying: Command = {
         }
 
         const command = Nica.commands.find(
-          (command) =>
-            command.data.name ===
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            convertedInteraction.commandName,
+          (command) => command.data.name === convertedInteraction.commandName,
         );
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         if (command) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           await command.run(Nica, convertedInteraction);
         } else {
           await collectorInteraction.reply({
@@ -219,7 +209,6 @@ export const nowPlaying: Command = {
             ephemeral: true,
           });
           logger.debug(
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-member-access
             `${convertedInteraction.commandName} was not found`,
             `Debug from command: ${interaction.commandName}`,
           );
