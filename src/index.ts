@@ -19,6 +19,7 @@ void (async () => {
 
     // Initialize player
     Nica.player = new Player(Nica);
+    await Nica.player.extractors.loadDefault();
 
     // Initialize player config
     Nica.playerConfigs = {

@@ -42,6 +42,8 @@
     },
     "dependencies": {
         "discord-player": "^6.6.2",
-        "discord.js": "^14.12.1"
+        "discord.js": "^14.12.1",
+        "opusscript": "^0.0.8",
+        "ytdl-core": "^4.11.5"
     }
 }
