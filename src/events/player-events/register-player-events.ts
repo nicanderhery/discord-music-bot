@@ -8,7 +8,6 @@ import {
   CacheType,
   ChatInputCommandInteraction,
   EmbedBuilder,
-  VoiceState,
 } from 'discord.js';
 import { GuildMetadata } from '../../interfaces/guild-metadata';
 import { NicaMusic } from '../../interfaces/nica-discord';
@@ -167,6 +166,20 @@ export const registerPlayerEvents = (Nica: NicaMusic, player: Player): void => {
       logger.debug(queue, `Player event disconnect in ${queue.guild.name}`);
     });
 
+    player.events.on('channelPopulate', (queue) => {
+      const metadata = queue.metadata as GuildMetadata;
+      if (metadata.manualPause) {
+        queue.node.pause();
+        return;
+      }
+      metadata.channel.send('Continuing the music ✅').catch((error) => {
+        logger.error(error, 'Error from event: voiceStateUpdate');
+      });
+      Nica.user?.setActivity(queue.currentTrack?.title ?? 'Missing title', {
+        type: ActivityType.Listening,
+      });
+    });
+
     player.events.on('emptyChannel', (queue) => {
       const metadata = queue.metadata as GuildMetadata;
       if (Nica.playerConfigs.leaveOnEmpty) {
@@ -176,6 +189,18 @@ export const registerPlayerEvents = (Nica: NicaMusic, player: Player): void => {
           .catch((error) => {
             logger.error(error, 'Error from event: emptyChannel');
           });
+      } else {
+        if (metadata.manualPause) {
+          return;
+        }
+        metadata.channel
+          .send(`Nobody is in voice channel ${metadata.voiceChannel.name}, pausing the music... ❌`)
+          .catch((error) => {
+            logger.error(error, 'Error from event: voiceStateUpdate');
+          });
+        Nica.user?.setActivity(Nica.configs.message, {
+          type: ActivityType.Listening,
+        });
       }
     });
 
@@ -187,59 +212,6 @@ export const registerPlayerEvents = (Nica: NicaMusic, player: Player): void => {
       Nica.user?.setActivity(Nica.configs.message, {
         type: ActivityType.Listening,
       });
-    });
-
-    let currentlyPaused = false;
-    Nica.on('voiceStateUpdate', (oldState, newState) => {
-      const channels: VoiceState[] = [oldState, newState];
-      let guildId: string | undefined;
-      while (channels.length) {
-        guildId = channels.shift()?.guild.id;
-        if (guildId) {
-          break;
-        }
-      }
-      if (!guildId) {
-        return;
-      }
-      const queue = player.nodes.get(guildId);
-      if (!queue) {
-        return;
-      }
-      const metadata = queue.metadata as GuildMetadata;
-      if (metadata.manualPause) {
-        return;
-      }
-      const memberSize: number = metadata.voiceChannel.members.size;
-
-      // If at least one member is in the bot's voice channel, unpause the music
-      if (memberSize > 1) {
-        queue.node.resume();
-        if (currentlyPaused) {
-          metadata.channel.send('Continuing the music ✅').catch((error) => {
-            logger.error(error, 'Error from event: voiceStateUpdate');
-          });
-          Nica.user?.setActivity(queue.currentTrack?.title ?? 'Missing title', {
-            type: ActivityType.Listening,
-          });
-          currentlyPaused = false;
-        }
-      } else {
-        queue.node.pause();
-        if (!currentlyPaused) {
-          metadata.channel
-            .send(
-              `Nobody is in voice channel ${metadata.voiceChannel.name}, pausing the music... ❌`,
-            )
-            .catch((error) => {
-              logger.error(error, 'Error from event: voiceStateUpdate');
-            });
-          Nica.user?.setActivity(Nica.configs.message, {
-            type: ActivityType.Listening,
-          });
-          currentlyPaused = true;
-        }
-      }
     });
 
     logger.log('Player events registered');
