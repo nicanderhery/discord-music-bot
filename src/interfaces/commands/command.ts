@@ -11,11 +11,16 @@ export interface Command {
     | SlashCommandSubcommandsOnlyBuilder;
 
   /**
+   * Autocomplete function for the command.
+   * @param Nica Nica's Discord instance.
+   * @param interaction The interaction payload from Discord.
+   */
+  autocomplete?: (Nica: NicaMusic, interaction: AutocompleteInteraction) => Promise<void>;
+
+  /**
    *
    * @param {NicaMusic} Nica Nica's Discord instance.
    * @param {ChatInputCommandInteraction} interaction The interaction payload from Discord.
    */
   run: (Nica: NicaMusic, interaction: ChatInputCommandInteraction) => Promise<void>;
-
-  autocomplete?: (Nica: NicaMusic, interaction: AutocompleteInteraction) => Promise<void>;
 }
