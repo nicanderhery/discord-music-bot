@@ -7,7 +7,7 @@ import { Command } from '../interfaces/commands/command';
 import { NicaMusic } from '../interfaces/nica-discord';
 import { logger } from '../utils/logger';
 
-export const setting: Command = {
+export const settings: Command = {
   data: new SlashCommandBuilder()
     .setName('settings')
     .setDescription('Change the bot settings')
@@ -61,18 +61,12 @@ export const setting: Command = {
       // It shows number, but it will not be a number, because it is already filtered
       const currentValue = Nica.playerConfigs[setting as keyof NicaMusic['playerConfigs']];
       Object.assign(Nica.playerConfigs, { [setting]: !currentValue });
-      logger.debug(
-        `Setting ${setting} to ${!currentValue}`,
-        `Debug from command: ${interaction.commandName}`,
-      );
-      logger.debug(Nica.playerConfigs, `Debug from command: ${interaction.commandName}`);
 
       await interaction.reply({
         content: `Setting ${setting} to ${!currentValue}, the bot needs to be restarted for the changes to take effect ${
           // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           interaction.member
         } ✅`,
-        ephemeral: true,
       });
     } catch (error) {
       logger.error(error, `Error from command: ${interaction.commandName}`);
