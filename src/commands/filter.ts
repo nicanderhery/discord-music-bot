@@ -15,10 +15,10 @@ export const filter: Command = {
         .setDescription('The filter you want to use')
         .setRequired(true)
         .addChoices(
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           ...Object.keys(AudioFilters.filters)
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            .map((m) => Object({ name: m, value: m }))
+            .map((m) => {
+              return { name: m, value: m };
+            })
             .splice(0, 25),
         ),
     ),
